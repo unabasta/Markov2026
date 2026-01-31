@@ -1,0 +1,45 @@
+###2b###
+N = 1e6;
+U = rand(N,1);
+X = zeros(N,1);
+
+tic
+for i = 1:N
+    u = U(i);
+    f = @(x) 1-exp(-x).*(x+1)-u;
+    df = @(x) exp(-x).*x;
+    x = 1; % initial guess
+    for k = 1:20
+        x = x - f(x)/df(x);
+        x = max(x,0);
+    end
+    X(i) = x;
+end
+toc
+
+###2c###
+N = 1e6;
+X = zeros(N,1);
+count = 0;
+
+tic
+i = 1;
+while i <= N
+    Y = -2*log(rand);
+    U = rand;
+    if U <= (Y.*exp(-Y/2))/(2*exp(-1))
+        X(i) = Y;
+        i = i + 1;
+    end
+    count = count + 1;
+end
+toc
+
+acceptance_rate = N/count
+
+###2d###
+N = 1e6;
+
+tic
+X = -log(rand(N,1)) - log(rand(N,1));
+toc
