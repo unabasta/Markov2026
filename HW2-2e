@@ -1,0 +1,9 @@
+x = linspace(0,10,500);
+pdf = x.*exp(-x);
+
+figure
+histogram(X,'Normalization','pdf')
+hold on
+plot(x,pdf,'r','LineWidth',2)
+xlabel('x')
+ylabel('PDF')
