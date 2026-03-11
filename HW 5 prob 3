@@ -1,0 +1,46 @@
+a = 0.99;
+p = [1-a, a,   0;
+     a,   0,   1-a;
+     0,   1-a, a];
+A = p';
+
+[V,D] = eig(A);
+lam = diag(D);
+fprintf('Eigenvalues: %.6f  %.6f  %.6f\n', lam(1), lam(2), lam(3));
+
+q0 = [1;0;0];
+c = V\q0;
+nmax = 300;
+qn1 = zeros(nmax+1,1);
+for n = 0:nmax
+    qn1(n+1) = real(V(1,:) * (c .* lam.^n));
+end
+
+figure;
+Nvals = [100, 1000, 10000];
+n_plot = 0:nmax;
+for k = 1:3
+    Nsim = Nvals(k);
+    fn = zeros(1,nmax+1);
+    fn(1) = Nsim;
+    states = ones(Nsim,1);
+    for n = 1:nmax
+        for chain = 1:Nsim
+            cp = cumsum(p(states(chain),:));
+            states(chain) = find(rand <= cp, 1);
+            if states(chain) == 1
+                fn(n+1) = fn(n+1)+1;
+            end
+        end
+    end
+    fn = fn/Nsim;
+    subplot(3,1,k);
+    plot(n_plot, fn, 'b-', 'LineWidth',0.8); hold on;
+    plot(n_plot, qn1,'r--','LineWidth',1.5);
+    yline(1/3,'k:','LineWidth',1);
+    xlabel('n'); ylabel('Probability');
+    title(sprintf('N = %d', Nsim));
+    legend('f_n (sim)','q_n(1) (theory)','\pi(1)=1/3','Location','northeast');
+    xlim([0 nmax]); ylim([0 1]); grid on;
+end
+sgtitle('Convergence to Stationary Distribution, a = 0.99');
