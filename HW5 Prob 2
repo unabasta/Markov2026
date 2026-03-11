@@ -1,0 +1,47 @@
+a = 0.04; b = 0.16; K = 0.1;
+N = 5;
+
+p = zeros(N);
+for n = 1:N
+    if n < N, p(n,n+1) = K*exp(a*n); end
+    if n > 1, p(n,n-1) = K*exp(b*(n-1)); end
+    p(n,n) = 1 - sum(p(n,:));
+end
+
+pi_a = zeros(1,N); pi_a(1) = 1;
+for i = 2:N
+    pi_a(i) = pi_a(i-1) * exp((a-b)*(i-1));
+end
+pi_a = pi_a / sum(pi_a);
+
+[V,D] = eig(p');
+eigvals = diag(D);
+[~,idx] = min(abs(eigvals - 1));
+pi_b = abs(real(V(:,idx)));
+pi_b = (pi_b / sum(pi_b))';
+
+nsteps = 1e6;
+counts = zeros(1,N);
+state = 1;
+for t = 1:nsteps
+    u = rand;
+    cp = cumsum(p(state,:));
+    state = find(u <= cp, 1, 'first');
+    counts(state) = counts(state) + 1;
+end
+pi_c = counts / nsteps;
+
+figure;
+x = 1:N;
+bar(x - 0.25, pi_a, 0.25, 'FaceColor', [0.2 0.4 0.8]); hold on;
+bar(x,         pi_b, 0.25, 'FaceColor', [0.8 0.2 0.2]);
+bar(x + 0.25, pi_c, 0.25, 'FaceColor', [0.2 0.7 0.2]);
+legend('Analytical (a)','Eigenvector (b)','Simulation (c)');
+xlabel('State'); ylabel('\pi(i)');
+title('Stationary Distribution (a=0.04, b=0.16, K=0.1)');
+xlim([0.5 5.5]); grid on;
+saveas(gcf, 'prob2_stationary.png');
+
+fprintf('Analytical:  '); fprintf('%.4f ', pi_a); fprintf('\n');
+fprintf('Eigenvector: '); fprintf('%.4f ', pi_b); fprintf('\n');
+fprintf('Simulation:  '); fprintf('%.4f ', pi_c); fprintf('\n');
